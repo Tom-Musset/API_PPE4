@@ -3,7 +3,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 
-$app = AppFactory::create();
+
 
 $app->get('/{table}/{id}', function (Request $request, Response $response, array $args){
 	$table = $args['table'];
@@ -21,6 +21,7 @@ $app->get('/{table}/{id}', function (Request $request, Response $response, array
 		$db = null;
 		$response->getBody()->write(json_encode($table));
 		return $response
+			->withHeader('Access-Control-Allow-Origin', '*')
 			->withHeader('content-type','application/json')
 			->withStatus(200);
 	} catch (PDOException $e) {
@@ -30,6 +31,39 @@ $app->get('/{table}/{id}', function (Request $request, Response $response, array
 
 		$response->getBody()->write(json_encode($error));
 		return $response 
+			->withHeader('Access-Control-Allow-Origin', '*')
+			->withHeader('content-type','application/json')
+			->withStatus(501);
+	}
+});
+
+$app->delete('/delete/{table}/{id}', function (Request $request, Response $response, array $args){
+	$table = $args['table'];
+	$id = $args['id'];
+
+	$sql = "DELETE FROM $table WHERE id = $id";
+
+	try{
+		$db = new DB();
+		$conn = $db->connect();
+
+		$stmt = $conn->prepare($sql);
+		$table = $stmt->execute();
+
+		$db = null;
+		//$response->getBody()->write(json_encode($table));
+		return $response
+			->withHeader('Access-Control-Allow-Origin', '*')
+			->withHeader('content-type','application/json')
+			->withStatus(200);
+	} catch (PDOException $e) {
+		$error = array(
+			"message" => $e->getMessage()
+		);
+
+		$response->getBody()->write(json_encode($error));
+		return $response 
+			->withHeader('Access-Control-Allow-Origin', '*')
 			->withHeader('content-type','application/json')
 			->withStatus(501);
 	}

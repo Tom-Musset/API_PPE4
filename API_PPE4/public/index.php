@@ -8,11 +8,12 @@ require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../config/db.php';
 $app = AppFactory::create();
 
-$app->addErrorMiddleware(true,true,true);
+$app->addErrorMiddleware(true,true,false);
 
 $app->get('/', function (Request $request, Response $response) {
 	$response->getBody()->write('hello, world!');
-	return $response ;
+	return $response
+        ->withHeader('Access-Control-Allow-Origin', '*');
 });
 
 require __DIR__ . '/../routes/table.php';
